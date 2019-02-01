@@ -80,13 +80,53 @@ export function startDefaultStorage(){
 
 export function canMove()
 {
+    console.log("canMove");
     return (getCurrentCol().length<size) ||
            (getCurrentRow().length<size);
 }
 
 export function move()
 {
-    let direction = getDirection();
+    console.log("move");
+    let toDirection = getDirection();
+
+    let col = getCurrentCol();
+    let row = getCurrentRow();
+
+    let current = getCurrentPiece();
+    let cM = false;
+
+    let gTM = getGroupToMove(current.id, toDirection, col.length<row.length ? col : row);
+    console.log(gTM);
+
+    let fn = function(arr, axis, val)
+    {
+        for(let i = 0; i<arr.length; i++)
+        {
+            let p = arr[i];
+            pieceStorage.PieceArray[ p.id - 1 ][axis] = p[axis] + val;
+        }
+    };
+
+    switch(toDirection){
+        
+        case direction.TOP:
+        fn(gTM, "y", -1);
+        break;
+
+        case direction.BOTTOM:
+        fn(gTM, "y", 1);
+        break;
+
+        case direction.LEFT:
+        fn(gTM, "x", -1);
+        break;
+
+        case direction.RIGHT:
+        fn(gTM, "x", 1);
+        break;
+    }
+emitChange();
 }
 
 export function getDirection()
@@ -112,61 +152,22 @@ export function getDirection()
 function getHorizontalDirection()
 {
     let row = getCurrentRow();
-    console.log("row")
-    console.log(row);
+    
     let p = getCurrentPiece();
     
-    let spaces = [0,0,0,0]; //firma
-
-    for(let i = 0; i < row.length; i++)
-    {
-        spaces[ row[i].x ] = 1;
-
-        if(row[i].x === p.x)
-          spaces[row[i].x] = 2;
-    }
-
-    console.log(spaces);
-    console.log(spaces === [2,1,1,0]); //no se puede comparar arrays directamente
+    let spaces = getSign(row, p, "x");// [0,0,0,0]; //firma
+    
     let control = 0;
-    for(let i = 0; i < LEFT_SIGNS.length; i++)
-    {
-        let ls = LEFT_SIGNS[i];
 
-        for(let j=0; j<ls.length; j++)
-        {
-            if(spaces[j]===ls[j])
-            {
-                control++;
-            }
+    let left = compareSign(spaces, LEFT_SIGNS, direction.LEFT);
+    
+    if(left===direction.LEFT)
+        return left;
+    
+    let right = compareSign(spaces, RIGHT_SIGNS, direction.RIGHT);
 
-            if(control===size)
-            {
-                console.log("LEFT");
-                return direction.LEFT;
-            }
-        }
-        control = 0;
-
-    }
-
-    for(let i = 0; i < RIGHT_SIGNS.length; i++)
-    {
-        let rs = RIGHT_SIGNS[i];
-
-        for(let j = 0; j<size; j++)
-        {
-            if(spaces[j] === rs[j])
-            {
-                control++;
-            }
-            if(control === size)
-            {
-                console.log("RIGHT");
-                return direction.RIGHT;
-            }
-        }
-    }
+    if(right === direction.RIGHT)
+        return right;
 
     return direction.UNDEFINED;
 
@@ -178,15 +179,7 @@ function getVerticalDirection()
 
     let p = getCurrentPiece();
     
-    let spaces = [0,0,0,0];
-
-    for(let i = 0; i < col.length; i++)
-    {
-        spaces[ col[i].y ] = 1;
-
-        if(col[i].y === p.y)
-        spaces[col[i].y] = 2;
-    }
+    let spaces = getSign(col, p, "y");
 
     let control = 0;
 
@@ -232,6 +225,47 @@ function getVerticalDirection()
     return direction.UNDEFINED;
 }
 
+function getSign(arr, curr, key)
+{
+    let sign=[0,0,0,0];
+
+    for(let i = 0; i < arr.length; i++)
+    {
+        sign[ arr[i][key] ] = 1;
+
+        if(arr[i][key] === curr[key])
+          sign[arr[i][key]] = 2;
+    }
+
+    return sign;
+}
+
+function compareSign(sign, map, msg)
+{
+    let control = 0;
+
+    for(let i = 0; i < map.length; i++)
+    {
+        let ls = map[i];
+
+        for(let j=0; j<ls.length; j++)
+        {
+            if(sign[j]===ls[j])
+            {
+                control++;
+            }
+
+            if(control===size)
+            {
+                return msg;
+            }
+        }
+        control = 0;
+
+    }
+    return null;
+}
+
 export function getStorage()
 {
     return pieceStorage;
@@ -259,6 +293,71 @@ export function setActual(id)
 export function getActual()
 {
     return pieceStorage.actualPiece;
+}
+
+function getGroupToMove(id, dir, arr)
+{
+    let axis = "z";
+
+    let group = [];
+
+    let fnc = null;
+
+    (dir === direction.LEFT || dir === direction.RIGHT) ? axis = "x" : axis = "y";
+
+    (dir === direction.LEFT || dir === direction.TOP) ? 
+    
+        fnc = function(){
+        let start = false;
+        for(let i = arr.length-1; i>=0; i--){
+
+            if(start)
+            {
+                if(arr[i][axis] === ( (group[group.length - 1][axis]) - 1) )
+                {
+                    group.push(arr[i]);
+                }else{break;}
+            }
+
+            if(!start)
+            if(arr[i].id === id)
+            {
+                group.push(arr[i]);
+                start = true;
+            }
+
+        }
+    }
+      : fnc = function(){
+
+        let start = false;
+
+        for(let i = 0; i<arr.length; i++){
+
+            if(start)
+            {
+                if(arr[i][axis] === ( (group[group.length - 1][axis]) + 1) )
+                {
+                    group.push(arr[i]);
+                }else{break;}
+            }
+
+            if(!start)
+            if(arr[i].id === id)
+            {
+                group.push(arr[i]);
+                start = true;
+            }
+
+        }
+
+      }
+      ;
+
+    fnc();
+
+    return group;
+    
 }
 
 function getCurrentRow()
@@ -294,4 +393,15 @@ function getCurrentCol()
     }
 
     return col;
+}
+
+function getByPosition(x, y)
+{
+    for(let i = 0; i < pieceStorage.PieceArray.length; i++)
+    {
+        let piece = pieceStorage.PieceArray[i];
+        if(piece.x === x && piece.y === y)
+        return piece;
+    }
+    return null;
 }

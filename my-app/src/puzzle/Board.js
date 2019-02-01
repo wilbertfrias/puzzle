@@ -4,7 +4,7 @@ import Piece from './Piece';
 
 export default function Board(pieceStorage){
     const spaces = [];
-        console.log(pieceStorage);
+        //console.log(pieceStorage);
     for(let i=0; i<16; i++)
     {
         spaces.push(renderSpace(i, pieceStorage));
@@ -41,7 +41,7 @@ function renderSpace(i, pStg){
 function renderPiece(x, y, pStg){
 
     let arr = pStg.PieceArray;
-    console.log(arr);
+
     
     for(let i = 0; i< arr.length; i++)
     {

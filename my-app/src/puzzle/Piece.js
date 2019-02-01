@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { canMove, setActual, getDirection} from './Game';
+import { canMove, move, setActual, getDirection} from './Game';
 
 export default function Piece(id)
 {
@@ -8,7 +8,7 @@ export default function Piece(id)
     return(
         <div key={id}
         onClick={
-            ()=>move({id})
+            ()=>_move({id})
         }
         style={{
             width:'100%',
@@ -26,9 +26,9 @@ export default function Piece(id)
     );
 }
 
-function move(id)
+function _move(id)
 {
     setActual(id);
-    console.log(canMove());
-    console.log(getDirection());
+    if(canMove())
+    move();
 }
