@@ -90,8 +90,8 @@ export function move()
     console.log("move");
     let toDirection = getDirection();
 
-    let col = getCurrentCol();
-    let row = getCurrentRow();
+    let col = getCurrentCol(true);
+    let row = getCurrentRow(true);
 
     let current = getCurrentPiece();
     let cM = false;
@@ -295,6 +295,7 @@ export function getActual()
     return pieceStorage.actualPiece;
 }
 
+//arr debe estar ordenado
 function getGroupToMove(id, dir, arr)
 {
     let axis = "z";
@@ -360,7 +361,7 @@ function getGroupToMove(id, dir, arr)
     
 }
 
-function getCurrentRow()
+function getCurrentRow(order = false)
 {
     let p = getCurrentPiece();
 
@@ -375,10 +376,43 @@ function getCurrentRow()
         }
     }
 
+    if(order)
+    {
+        //copiamos la fila
+        let buffer = row;
+        let buff = [];
+        let min = 0;
+        
+        //la vaciamos
+        row = [];
+        while(buffer.length>0){
+
+                console.log("filtering");
+
+            for(let i = 0; i<buffer.length; i++)
+            {
+                buff.push(buffer[i].x);
+            }
+
+            min = Math.min(...buff);
+
+            for(let i = 0; i<buffer.length; i++)
+            {
+                if(buffer[i].x === min){
+                    row.push(buffer[i]);
+                }
+            }
+            buff=[];
+            buffer=buffer.filter(item => item.x !== min);
+            
+        }
+
+    }
+    console.log(row);
     return row;
 }
 
-function getCurrentCol()
+function getCurrentCol(order = false)
 {
     let p = getCurrentPiece();
     let arr = pieceStorage.PieceArray;
@@ -390,6 +424,37 @@ function getCurrentCol()
         {
             col.push(arr[i]);
         }
+    }
+
+    if(order)
+    {
+        //copiamos la columna
+        let buffer = col;
+        let buff = [];
+        let min = 0;
+
+        //la vaciamos
+        col = [];
+        while(buffer.length>0){
+              
+            for(let i = 0; i<buffer.length; i++)
+            {
+                buff.push(buffer[i].y);
+            }
+
+            min = Math.min(...buff);
+
+            for(let i = 0; i<buffer.length; i++)
+            {
+                if(buffer[i].y === min){
+                    col.push(buffer[i]);
+                }
+            }
+            buff=[];
+            buffer=buffer.filter(item => item.y !== min);
+
+        }
+
     }
 
     return col;
