@@ -271,6 +271,13 @@ export function getStorage()
     return pieceStorage;
 }
 
+export function getPieceById(id)
+{
+    let p = pieceStorage.PieceArray.filter(item => item.id === id);
+    
+    return p[0];
+}
+
 export function getCurrentPiece(){
 
     for(let i = 0; i < pieceStorage.PieceArray.length; i++)
@@ -443,7 +450,7 @@ function getCurrentCol(order = false)
             }
 
             min = Math.min(...buff);
-
+  
             for(let i = 0; i<buffer.length; i++)
             {
                 if(buffer[i].y === min){
@@ -458,15 +465,4 @@ function getCurrentCol(order = false)
     }
 
     return col;
-}
-
-function getByPosition(x, y)
-{
-    for(let i = 0; i < pieceStorage.PieceArray.length; i++)
-    {
-        let piece = pieceStorage.PieceArray[i];
-        if(piece.x === x && piece.y === y)
-        return piece;
-    }
-    return null;
 }

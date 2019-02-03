@@ -7,7 +7,7 @@ import {PuzzleProvider} from './PuzzleContext';
 import Consumer from './Consumer';
 const root = document.getElementById('root');
 
-export default function run()
+export function run()
 {
     //startDefaultStorage();
     setActual(1);
